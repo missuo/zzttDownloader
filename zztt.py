@@ -3,7 +3,7 @@
 Author: Vincent Young
 Date: 2023-01-17 03:51:29
 LastEditors: Vincent Young
-LastEditTime: 2023-01-17 23:43:25
+LastEditTime: 2023-01-18 02:04:14
 FilePath: /zzttDownloader/zztt.py
 Telegram: https://t.me/missuo
 
@@ -27,11 +27,6 @@ from selenium.webdriver.chrome.options import Options
 import uuid
 
 class ThreadPoolExecutorWithQueueSizeLimit(ThreadPoolExecutor):
-    """
-    实现多线程有界队列
-    队列数为线程数的2倍
-    """
-
     def __init__(self, max_workers=None, *args, **kwargs):
         super().__init__(max_workers, *args, **kwargs)
         self._work_queue = queue.Queue(max_workers * 2)
@@ -53,13 +48,12 @@ class M3u8Download:
     :param base64_key: base64编码的字符串
     """
 
-    def __init__(self, url, name, max_workers=64, num_retries=5, base64_key=None):
+    def __init__(self, url, save_dir, name, max_workers=64, num_retries=5, base64_key=None):
         self._url = url
         self._name = name
         self._max_workers = max_workers
         self._num_retries = num_retries
-        # self._file_path = file_path
-        self._file_path = os.path.join(os.getcwd(), self._name)
+        self._file_path = os.path.join(os.getcwd(), save_dir, self._name)
         self._front_url = None
         self._ts_url_list = []
         self._success_sum = 0
@@ -213,41 +207,50 @@ class M3u8Download:
         os.remove(self._file_path + '.m3u8')
 
 
-def decode_image(src):
-    """
-    解码图片
-    :param src: 图片编码
-        eg:
-            src="data:image/gif;base64,R0lGODlhMwAxAIAAAAAAAP///
-                yH5BAAAAAAALAAAAAAzADEAAAK8jI+pBr0PowytzotTtbm/DTqQ6C3hGX
-                ElcraA9jIr66ozVpM3nseUvYP1UEHF0FUUHkNJxhLZfEJNvol06tzwrgd
-                LbXsFZYmSMPnHLB+zNJFbq15+SOf50+6rG7lKOjwV1ibGdhHYRVYVJ9Wn
-                k2HWtLdIWMSH9lfyODZoZTb4xdnpxQSEF9oyOWIqp6gaI9pI1Qo7BijbF
-                ZkoaAtEeiiLeKn72xM7vMZofJy8zJys2UxsCT3kO229LH1tXAAAOw=="
+def decode_image(src, save_dir):
+	"""
+	decode_image
+	:param src: base64 image
+	:param save_dir: str save dir name
 
-    :return: str 保存到本地的文件名
-    """
-    # 1、信息提取
-    result = re.search("data:image/(?P<ext>.*?);base64,(?P<data>.*)", src, re.DOTALL)
-    if result:
-        ext = result.groupdict().get("ext")
-        data = result.groupdict().get("data")
+	:return: str filename
+	"""
+	# Get base64 info
+	result = re.search("data:image/(?P<ext>.*?);base64,(?P<data>.*)", src, re.DOTALL)
+	if result:
+		ext = result.groupdict().get("ext")
+		data = result.groupdict().get("data")
+		
+	else:
+		raise Exception("Do not parse!")
+		
+	# Base64 decode
+	img = base64.urlsafe_b64decode(data)
+	
+	# Save file　
+	filename = "{}.{}".format(uuid.uuid4(), ext)
+	
+	# Splice full path
+	file_path = os.path.join(os.getcwd(), save_dir, filename)
+	file_path_dir = os.path.dirname(file_path)
+	if not os.path.exists(file_path_dir):
+		os.makedirs(file_path_dir)
+	with open(file_path, "wb") as f:
+		f.write(img)
+		
+	return filename
 
-    else:
-        raise Exception("Do not parse!")
-
-    # 2、base64解码
-    img = base64.urlsafe_b64decode(data)
-
-    # 3、二进制文件保存
-    filename = "{}.{}".format(uuid.uuid4(), ext)
-    with open(filename, "wb") as f:
-        f.write(img)
-
-    return filename
+def getPostTitle(url):
+	headers = {
+		"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
+	}
+	r = httpx.get(url = url, headers = headers).text
+	tree = etree.HTML(r)
+	postName = tree.xpath('//*[@id="post"]/article/h1')[0].text.replace(' ', '')
+	return postName
 
 
-def videoParse(url):
+def videoParse(url, postName):
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
     }
@@ -262,12 +265,12 @@ def videoParse(url):
             videoData = json.loads(dataConfig)
             videoUrl = videoData["video"]["url"]
             filename = os.path.basename(videoUrl).replace('.m3u8','')
-            M3u8Download(videoUrl, filename, max_workers=64, num_retries=10)
+            M3u8Download(videoUrl, postName, filename, max_workers=64, num_retries=10)
             print(videoUrl)
         videoNum = videoNum + 1
     print("All videos have been downloaded!")
 
-def imageParse(url):
+def imageParse(url, postName):
     option = webdriver.ChromeOptions()
     option.add_argument("--headless")
     driver = webdriver.Chrome('./chromedriver', options=option)
@@ -275,14 +278,15 @@ def imageParse(url):
     imgs = driver.find_elements('xpath','//*[@id="post"]/article/div[3]/p/img')
     for img in imgs:
         imgBase64 = img.get_attribute('src')
-        decode_image(imgBase64)
+        decode_image(imgBase64, postName)
     print("All images have been downloaded!")
 
 def main():
     postUrl = input("Paste post url here: ")
+    postName = getPostTitle(postUrl)
 #   postUrl = "https://zztt31.com/archives/16161.html"
-    imageParse(postUrl)
-    videoParse(postUrl)
+    imageParse(postUrl, postName)
+    videoParse(postUrl, postName)
 
 main()
     
