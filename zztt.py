@@ -22,8 +22,6 @@ import requests
 import urllib3
 from concurrent.futures import ThreadPoolExecutor
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
 import uuid
 
 class ThreadPoolExecutorWithQueueSizeLimit(ThreadPoolExecutor):
