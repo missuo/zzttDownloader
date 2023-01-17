@@ -2,7 +2,7 @@
  * @Author: Vincent Young
  * @Date: 2023-01-17 06:50:42
  * @LastEditors: Vincent Young
- * @LastEditTime: 2023-01-17 06:54:35
+ * @LastEditTime: 2023-01-17 23:45:14
  * @FilePath: /zzttDownloader/README.md
  * @Telegram: https://t.me/missuo
  * 
@@ -11,11 +11,12 @@
 # zzttDownloader
 Useful zztt site backup/download tool
 
-## Features
-- Download all videos from `zztt`
+## Usage
+**You should install all of the dependencies, and download `chromedriver` to the `zztt.py` directory.**
 
-## TO DO
-- Support image batch download (Due to image encryption, the code is not finished yet)
+## Features
+- Support videos batch download
+- Support images batch download
 
 ## Open Source Used
 - [anwenzen/M3u8Download](https://github.com/anwenzen/M3u8Download)
