@@ -241,7 +241,6 @@ def decode_image(src):
 
     # 3、二进制文件保存
     filename = "{}.{}".format(uuid.uuid4(), ext)
-    print(filename)
     with open(filename, "wb") as f:
         f.write(img)
 
@@ -273,7 +272,7 @@ def imageParse(url):
     option.add_argument("--headless")
     driver = webdriver.Chrome('./chromedriver', options=option)
     driver.get(url)
-    imgs = driver.find_elements('xpath','//*[@id="post"]/article/div[3]/p[3]/img')
+    imgs = driver.find_elements('xpath','//*[@id="post"]/article/div[3]/p/img')
     for img in imgs:
         imgBase64 = img.get_attribute('src')
         decode_image(imgBase64)
