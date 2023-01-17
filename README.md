@@ -2,7 +2,7 @@
  * @Author: Vincent Young
  * @Date: 2023-01-17 06:50:42
  * @LastEditors: Vincent Young
- * @LastEditTime: 2023-01-17 23:45:14
+ * @LastEditTime: 2023-01-17 23:47:10
  * @FilePath: /zzttDownloader/README.md
  * @Telegram: https://t.me/missuo
  * 
@@ -12,7 +12,7 @@
 Useful zztt site backup/download tool
 
 ## Usage
-**You should install all of the dependencies, and download `chromedriver` to the `zztt.py` directory.**
+**You should install all of the dependencies, and download `chromedriver` to the root directory.**
 
 ## Features
 - Support videos batch download
