@@ -53,7 +53,7 @@ class M3u8Download:
     :param base64_key: base64编码的字符串
     """
 
-    def __init__(self, url, file_path, name, max_workers=64, num_retries=5, base64_key=None):
+    def __init__(self, url, name, max_workers=64, num_retries=5, base64_key=None):
         self._url = url
         self._name = name
         self._max_workers = max_workers
@@ -280,8 +280,8 @@ def imageParse(url):
     print("All images have been downloaded!")
 
 def main():
-    # postUrl = input("Paste post url here: ")
-    postUrl = "https://zztt31.com/archives/16161.html"
+    postUrl = input("Paste post url here: ")
+#   postUrl = "https://zztt31.com/archives/16161.html"
     imageParse(postUrl)
     videoParse(postUrl)
 
