@@ -22,5 +22,4 @@ Useful zztt site backup/download tool
 - [anwenzen/M3u8Download](https://github.com/anwenzen/M3u8Download)
 
 ## Author
-
 **zzttDownloader** © [Vincent Young](https://github.com/missuo), Released under the [MIT](./LICENSE) License.<br>
